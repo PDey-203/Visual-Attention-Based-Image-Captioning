@@ -12,6 +12,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, LSTM, Embedding
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.layers import Concatenate
+from tensorflow.keras.regularizers import l2
 
 
 class BahdanauAttention(tf.keras.layers.Layer):
@@ -63,7 +64,7 @@ def build_tf_dataset(image_list, caption_dict, batch_size=64, is_training=True):
     )
 
     if is_training:
-        dataset = dataset.shuffle(1000)
+        dataset = dataset.shuffle(1500)
 
     return dataset.batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
@@ -143,13 +144,15 @@ image_input = Input(shape=(225, 1280))
 text_input = Input(shape=(max_length,))
 
 embedding = Embedding(vocab_size, 256, mask_zero=True)(text_input)
-lstm_output = LSTM(512)(embedding)
-attention = BahdanauAttention(512)
-context_vector = attention(image_input, lstm_output)
+embedding = Dropout(0.4)(embedding)
+lstm_output, state_h, state_c = LSTM(256, dropout=0.3, return_state=True)(embedding)
 
-combined = Concatenate()([context_vector, lstm_output])
-dense1 = Dense(512, activation="relu")(combined)
-dropout = Dropout(0.3)(dense1)
+attention = BahdanauAttention(256)
+context_vector = attention(image_input, state_h)
+
+combined = Concatenate()([context_vector, state_h])
+dense1 = Dense(256, activation="relu", kernel_regularizer=l2(1e-4))(combined)
+dropout = Dropout(0.4)(dense1)
 
 output = Dense(vocab_size, activation="softmax")(dropout)
 
@@ -158,7 +161,7 @@ caption_model.summary()
 
 caption_model.compile(
     loss="sparse_categorical_crossentropy",
-    optimizer=tf.keras.optimizers.Adam(learning_rate=5e-5),
+    optimizer=tf.keras.optimizers.Adam(learning_rate=3e-4),
     metrics=["accuracy"],
 )
 
@@ -170,13 +173,13 @@ lr_scheduler = tf.keras.callbacks.ReduceLROnPlateau(
 )
 
 early_stop = tf.keras.callbacks.EarlyStopping(
-    monitor="val_loss", patience=6, restore_best_weights=True
+    monitor="val_loss", patience=4, restore_best_weights=True
 )
 
 caption_model.fit(
     train_dataset,
     validation_data=val_dataset,
-    epochs=50,
+    epochs=30,
     callbacks=[early_stop, lr_scheduler],
 )
 

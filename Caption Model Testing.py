@@ -51,7 +51,8 @@ def extract_features(filename):
     img = preprocess_input(img)
 
     features = feature_extractor.predict(img, verbose=0)
-    features = features.reshape(1, -1, features.shape[-1])
+    features = features.reshape(-1, features.shape[-1])
+    features = np.expand_dims(features, axis=0)
     return features
 
 
@@ -114,9 +115,7 @@ def generate_caption_beam(model, photo, tokenizer, max_len, beam_size):
     return " ".join(caption_words)
 
 
-image_path = (
-    r"C:\Users\PRITAM\OneDrive\Desktop\julia-vivcharyk-zFNn_F7arz4-unsplash.jpg"
-)
+image_path = r"C:\Users\PRITAM\OneDrive\Desktop\gn-group-WUY0W2RSiBw-unsplash.jpg"
 
 photo_features = extract_features(image_path)
 predicted_caption = generate_caption_beam(
