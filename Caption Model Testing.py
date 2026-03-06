@@ -1,3 +1,4 @@
+import os
 import pickle
 import numpy as np
 import tensorflow as tf
@@ -28,16 +29,18 @@ class BahdanauAttention(tf.keras.layers.Layer):
         return context_vector
 
 
+BASE_DIR = os.path.dirname(__file__)
+
 caption_model = tf.keras.models.load_model(
-    r"C:\Users\PRITAM\OneDrive\Desktop\caption_Model.keras",
+    os.path.join(BASE_DIR, "caption_Model.keras"),
     custom_objects={"BahdanauAttention": BahdanauAttention},
 )
 
 feature_extractor = tf.keras.models.load_model(
-    r"C:\Users\PRITAM\OneDrive\Desktop\feature_extractor.keras"
+    os.path.join(BASE_DIR, "feature_extractor.keras")
 )
 
-with open(r"C:\Users\PRITAM\OneDrive\Desktop\tokenizer.pkl", "rb") as f:
+with open(os.path.join(BASE_DIR, "tokenizer.pkl"), "rb") as f:
     tokenizer = pickle.load(f)
 
 
@@ -115,7 +118,9 @@ def generate_caption_beam(model, photo, tokenizer, max_len, beam_size):
     return " ".join(caption_words)
 
 
-image_path = r"C:\Users\PRITAM\OneDrive\Desktop\gn-group-WUY0W2RSiBw-unsplash.jpg"
+image_path = os.path.join(
+    os.path.dirname(__file__), "gn-group-GaSO3TPOzxs-unsplash.jpg"
+)
 
 photo_features = extract_features(image_path)
 predicted_caption = generate_caption_beam(

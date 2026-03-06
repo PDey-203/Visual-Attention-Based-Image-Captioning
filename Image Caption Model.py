@@ -1,3 +1,4 @@
+import os
 import pickle
 import pandas as pd
 import numpy as np
@@ -93,7 +94,8 @@ def extract_features(filename):
     return features
 
 
-df = pd.read_csv(r"C:\Users\PRITAM\OneDrive\Desktop\captions.csv")
+csv_path = os.path.join(os.path.dirname(__file__), "captions.csv")
+df = pd.read_csv(csv_path)
 
 df["cleaned_caption"] = df["caption"].apply(preprocess_caption)
 
@@ -102,7 +104,7 @@ tokenizer = Tokenizer(oov_token="<unk>")
 tokenizer.fit_on_texts(df["cleaned_caption"])
 vocab_size = len(tokenizer.word_index) + 1
 
-with open(r"C:\Users\PRITAM\OneDrive\Desktop\tokenizer.pkl", "wb") as f:
+with open(os.path.join(os.path.dirname(__file__), "tokenizer.pkl"), "wb") as f:
     pickle.dump(tokenizer, f)
 print("Tokenizer saved successfully.")
 
@@ -133,10 +135,12 @@ feature_extractor.summary()
 
 features = {}
 for img_name in unique_images:
-    path = r"C:\\Users\\PRITAM\\OneDrive\\Desktop\\Images\\" + img_name
+    path = os.path.join(os.path.dirname(__file__), "Images", img_name)
     features[img_name] = extract_features(path)
 
-feature_extractor.save(r"C:\Users\PRITAM\OneDrive\Desktop\feature_extractor.keras")
+feature_extractor.save(
+    os.path.join(os.path.dirname(__file__), "feature_extractor.keras")
+)
 print("Feature extractor saved successfully.")
 
 
@@ -183,5 +187,5 @@ caption_model.fit(
     callbacks=[early_stop, lr_scheduler],
 )
 
-caption_model.save(r"C:\Users\PRITAM\OneDrive\Desktop\caption_Model.keras")
+caption_model.save(os.path.join(os.path.dirname(__file__), "caption_Model.keras"))
 print("Caption model saved successfully.")
