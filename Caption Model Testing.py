@@ -119,7 +119,7 @@ def generate_caption_beam(model, photo, tokenizer, max_len, beam_size):
 
 
 image_path = os.path.join(
-    os.path.dirname(__file__), "gn-group-GaSO3TPOzxs-unsplash.jpg"
+    os.path.dirname(__file__), "ruben-mavarez-drrGKd2LHy8-unsplash.jpg"
 )
 
 photo_features = extract_features(image_path)
