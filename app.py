@@ -6,6 +6,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.image import load_img, img_to_array
 from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 from tensorflow.keras.layers import Dense
+import streamlit as st
 
 
 class BahdanauAttention(tf.keras.layers.Layer):
@@ -118,16 +119,25 @@ def generate_caption_beam(model, photo, tokenizer, max_len, beam_size):
     return " ".join(caption_words)
 
 
-image_path = os.path.join(
-    os.path.dirname(__file__), "ruben-mavarez-drrGKd2LHy8-unsplash.jpg"
-)
+# ---------------- Streamlit UI ---------------- #
 
-photo_features = extract_features(image_path)
-predicted_caption = generate_caption_beam(
-    model=caption_model,
-    photo=photo_features,
-    tokenizer=tokenizer,
-    max_len=max_length,
-    beam_size=5,
-)
-print(f"Generated Caption is: {predicted_caption}")
+st.title("Image Caption Generator")
+
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
+
+    st.image(uploaded_file, caption="Uploaded Image", width="stretch")
+
+    photo_features = extract_features(uploaded_file)
+
+    predicted_caption = generate_caption_beam(
+        model=caption_model,
+        photo=photo_features,
+        tokenizer=tokenizer,
+        max_len=max_length,
+        beam_size=5,
+    )
+
+    st.subheader("Generated Caption:")
+    st.write(predicted_caption)
